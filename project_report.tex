@@ -1,0 +1,220 @@
+\documentclass[sigconf]{acmart}
+
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\title{Changelog Generator: A Tool for Automated Changelog Generation from Git History}
+
+\author{Your Name}
+\affiliation{
+  \institution{Oregon State University}
+  \city{Corvallis}
+  \state{Oregon}
+  \country{USA}
+}
+\email{your.email@oregonstate.edu}
+
+\begin{document}
+
+\begin{abstract}
+This paper presents the Changelog Generator, a Python-based tool designed to automate the creation of changelogs from git commit history. The tool supports both local repositories and GitHub URLs, offering features such as commit filtering, interactive selection, and intelligent commit scoring. It utilizes the Anthropic Claude API for generating human-readable changelog summaries. The implementation includes a command-line interface with various options for customization and a scoring system that evaluates commit importance based on message content and file changes.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+Maintaining accurate and meaningful changelogs is crucial for software projects, yet it remains a time-consuming task that is often neglected. Changelogs serve as essential documentation for developers, project managers, and end users, providing a clear record of new features, bug fixes, and other significant changes across project releases. Well-maintained changelogs improve transparency, facilitate collaboration, and help teams track progress, plan releases, and communicate updates to stakeholders.
+
+Despite their importance, changelogs are frequently overlooked or updated inconsistently. Manual changelog creation is prone to human error, omissions, and inconsistencies, especially in fast-paced development environments with frequent commits and multiple contributors. As projects scale, the volume and complexity of commit histories make it increasingly difficult to extract relevant information and summarize changes effectively.
+
+The Changelog Generator addresses these challenges by automating the process of creating changelogs from git commit history. By leveraging structured commit data and modern AI capabilities, the tool ensures that changelogs are comprehensive, accurate, and consistently formatted. Automation not only saves developer time but also improves the quality and reliability of project documentation.
+
+The tool is designed to be both user-friendly for developers and powerful enough to handle complex repository histories. Its command-line interface and structured output make it particularly suitable for integration with Large Language Models (LLMs) and AI coding assistants. LLMs can leverage the Changelog Generator to:
+\begin{itemize}
+    \item Access up-to-date information about code changes through the command-line interface
+    \item Generate human-readable summaries of recent changes using the Claude API integration
+    \item Filter and analyze commit history based on specific criteria
+    \item Provide developers with accurate information about recent updates and modifications
+\end{itemize}
+
+This integration enables LLMs to maintain current knowledge about codebases and provide more accurate assistance to developers. The tool's ability to process both local repositories and GitHub URLs makes it versatile for various development scenarios.
+
+In summary, the Changelog Generator bridges the gap between raw commit history and user-friendly changelogs, empowering both human developers and AI systems to better understand and communicate the evolution of software projects.
+
+
+\section{System Overview}
+The Changelog Generator is implemented in Python and provides the following core features:
+\begin{itemize}
+    \item Support for both local git repositories and GitHub URLs
+    \item Commit filtering by date range and patterns
+    \item Interactive commit selection
+    \item Commit scoring system based on message content and file changes
+    \item Integration with Anthropic Claude API for changelog generation
+    \item Command-line interface with extensive customization options
+\end{itemize}
+
+At a high level, the system is designed with modularity and extensibility in mind. The architecture separates repository access, commit processing, scoring, and changelog generation into distinct components, making it easy to extend or adapt the tool for additional use cases or integrations in the future.
+
+\subsection{Architecture and Workflow}
+The typical workflow of the Changelog Generator consists of the following stages:
+\begin{enumerate}
+    \item \textbf{Repository Access:} The tool determines whether the target is a local directory or a GitHub URL. It then fetches the commit history using the appropriate backend (GitPython for local repositories, GitHub API for remote).
+    \item \textbf{Commit Filtering:} Users can specify filters such as date ranges, commit message patterns, tags, or custom exclusion rules to narrow down the set of commits to be included in the changelog.
+    \item \textbf{Commit Scoring and Categorization:} Each commit is analyzed and scored based on its message content, the number and type of files changed, and other heuristics. Commits are optionally grouped into user-defined categories for improved readability.
+    \item \textbf{Interactive Review (Optional):} In interactive mode, users can review, select, or deselect commits to further refine the changelog contents.
+    \item \textbf{Changelog Generation:} The selected commits, along with their metadata and scores, are passed to the Anthropic Claude API. The API generates a well-structured, human-readable changelog in markdown format, with changes grouped and summarized under appropriate headings.
+    \item \textbf{Output and Integration:} The resulting changelog can be previewed, saved to a file, or integrated into release workflows, documentation pipelines, or LLM-based coding assistants.
+\end{enumerate}
+
+\subsection{Design Philosophy and Extensibility}
+The Changelog Generator is built to be both robust and flexible:
+\begin{itemize}
+    \item \textbf{Modularity:} Each major function (repository access, filtering, scoring, generation) is encapsulated, allowing for easy maintenance and future enhancements.
+    \item \textbf{Customizability:} The command-line interface exposes a wide range of options, enabling users to tailor the tool to their workflow and project conventions.
+    \item \textbf{Extensibility:} The system is designed to support additional repository platforms, alternative AI summarization services, or custom scoring heuristics with minimal changes.
+    \item \textbf{Integration-Ready:} Structured outputs and API-driven design make it easy to plug the tool into CI/CD pipelines, documentation systems, or AI-powered developer tools.
+\end{itemize}
+
+By combining traditional software engineering techniques with modern AI capabilities, the Changelog Generator provides a comprehensive, automated solution for changelog management that scales with project complexity and team size.
+
+\section{Implementation Details}
+
+\subsection{Core Components}
+The system consists of several key components:
+
+\subsubsection{Repository Handler}
+The tool can fetch commits from both local git repositories and GitHub URLs. For local repositories, it uses the GitPython library, while GitHub repositories are accessed through the GitHub REST API.
+
+\subsubsection{Commit Scoring System}
+The scoring system evaluates commits based on:
+\begin{itemize}
+    \item Keywords in commit messages (e.g., 'feat', 'fix', 'security')
+    \item Number of files changed
+    \item Size of changes (insertions/deletions)
+    \item Location of changes (important directories)
+\end{itemize}
+
+\subsubsection{Changelog Generation}
+The tool uses the Anthropic Claude API to generate human-readable changelog summaries from commit information. The API is called with a structured prompt that includes commit details and formatting requirements.
+
+\section{Usage}
+
+\subsection{Installation}
+\begin{verbatim}
+pip install -r requirements.txt
+export ANTHROPIC_API_KEY="your-api-key-here"
+\end{verbatim}
+
+\subsection{Command Line Interface}
+The tool provides a rich command-line interface with the following options:
+\begin{itemize}
+    \item Repository path (local or GitHub URL)
+    \item Number of commits to include
+    \item Date range filtering
+    \item Pattern-based commit exclusion
+    \item Custom categories for changelog organization
+    \item Tag-based commit filtering
+    \item Interactive mode for commit selection
+    \item Preview mode for commit review
+\end{itemize}
+
+\subsection{Example Usage}
+\begin{verbatim}
+# Generate changelog for last 10 commits
+python changelog_generator.py /path/to/repo 10
+
+# Filter by date range
+python changelog_generator.py /path/to/repo 10 --from-date 2024-01-01 --to-date 2024-02-01
+
+# Use custom categories and exclude patterns
+python changelog_generator.py /path/to/repo 10 -c "New Features" -c "Bug Fixes" -e "chore:" -e "docs:"
+
+# Interactive mode
+python changelog_generator.py /path/to/repo 10 --interactive
+\end{verbatim}
+
+\section{Implementation Examples}
+
+\subsection{Commit Scoring}
+\begin{lstlisting}[language=Python,caption=Commit Scoring Implementation]
+def score_commit(commit: Dict, repo: Optional[git.Repo] = None) -> Tuple[int, str]:
+    score = 0
+    message = commit['message'].lower()
+    
+    # Score based on keywords
+    for keyword, points in IMPORTANT_KEYWORDS.items():
+        if keyword in message:
+            score += points
+            
+    # Score based on file changes
+    if repo and 'hash' in commit:
+        stats = repo.commit(commit['hash']).stats.total
+        if stats['files'] > 5:
+            score += 2
+        elif stats['files'] > 2:
+            score += 1
+            
+    return score, explanation
+\end{lstlisting}
+
+\subsection{Changelog Generation}
+\begin{lstlisting}[language=Python,caption=Changelog Generation with Claude API]
+def generate_changelog(commits: List[Dict], categories: Optional[List[str]] = None) -> str:
+    prompt = f"""Based on the following git commit history, generate a user-friendly changelog in markdown format.
+    Requirements:
+    1. Use proper markdown formatting
+    2. Categorize changes under headers
+    3. Group related commits together
+    4. Focus on user-relevant changes
+    """
+    
+    response = requests.post(API_URL, headers=headers, json={
+        "model": "claude-3-sonnet-20240229",
+        "messages": [{"role": "user", "content": prompt}]
+    })
+    
+    return response.json()["content"][0]["text"]
+\end{lstlisting}
+
+\section{Conclusion}
+The Changelog Generator provides a practical solution for automating changelog creation from git commit history. Its implementation demonstrates the effective use of modern tools and APIs to solve a common development challenge. The tool's flexibility in handling different repository types and its rich feature set make it suitable for various development workflows.
+
+\section{Acknowledgments}
+Thanks to the open-source community for the libraries that made this project possible.
+
+\bibliographystyle{ACM-Reference-Format}
+\begin{thebibliography}{00}
+\bibitem{gitpython} GitPython Documentation, \url{https://gitpython.readthedocs.io/}
+\bibitem{click} Click Documentation, \url{https://click.palletsprojects.com/}
+\bibitem{questionary} Questionary Documentation, \url{https://questionary.readthedocs.io/}
+\bibitem{anthropic} Anthropic API, \url{https://docs.anthropic.com/claude/reference/complete_post}
+\end{thebibliography}
+
+
+
+\end{document} 
